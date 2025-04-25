@@ -6,7 +6,7 @@ import { useTodoStore } from "@/hooks/use-todo-store";
 import { useKanbanStore } from "@/hooks/use-kanban-store";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, SquareKanban } from "lucide-react";
+import { Pencil, Trash2, Trello } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -50,6 +50,20 @@ export function TodoItem({ todo }: TodoItemProps) {
         return "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400";
       default:
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
+  // Enhanced priority badges with icons
+  const getPriorityIcon = (priority: string | undefined) => {
+    switch (priority) {
+      case "high":
+        return "🔥";
+      case "medium":
+        return "⚡";
+      case "low":
+        return "✅";
+      default:
+        return "";
     }
   };
 
@@ -101,7 +115,7 @@ export function TodoItem({ todo }: TodoItemProps) {
               </p>
               {todo.priority && (
                 <Badge variant="secondary" className={cn("text-xs", getPriorityColor(todo.priority))}>
-                  {todo.priority}
+                  {getPriorityIcon(todo.priority)} {todo.priority}
                 </Badge>
               )}
               {todo.addedToKanban && (
@@ -131,7 +145,7 @@ export function TodoItem({ todo }: TodoItemProps) {
               className="h-8 w-8 text-primary"
               onClick={() => setShowKanbanDialog(true)}
             >
-              <SquareKanban className="h-4 w-4" />
+              <Trello className="h-4 w-4" />
               <span className="sr-only">Add to Kanban</span>
             </Button>
           )}

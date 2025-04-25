@@ -15,18 +15,67 @@ import {
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 
-const Form = FormProvider;
-
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
-> = {
-  name: TName;
-};
-
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
+const Form = React.forwardRef<HTMLFormElement, React.HTMLAttributes<HTMLFormElement>>(
+  ({ className, ...props }, ref) => (
+    <form
+      ref={ref}
+      className={cn('space-y-6', className)}
+      {...props}
+    />
+  )
 );
+Form.displayName = 'Form';
+
+const FormGroup = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('space-y-2', className)}
+    {...props}
+  />
+);
+
+interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+
+const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+  ({ className, label, error, ...props }, ref) => (
+    <div className="relative space-y-1">
+      <input
+        ref={ref}
+        className={cn(
+          'peer h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background',
+          'placeholder:text-transparent focus-visible:outline-none focus-visible:ring-2',
+          'focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+          'transition-all duration-200',
+          error ? 'border-destructive' : 'border-input',
+          className
+        )}
+        placeholder={label}
+        {...props}
+      />
+      <label
+        className={cn(
+          'pointer-events-none absolute left-3 top-2 px-1 text-sm transition-all duration-200',
+          'peer-placeholder-shown:top-2 peer-placeholder-shown:text-base',
+          'peer-focus:-top-3 peer-focus:text-sm peer-focus:text-primary',
+          'bg-background -top-3 text-sm text-muted-foreground',
+          error ? 'text-destructive' : ''
+        )}
+      >
+        {label}
+      </label>
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+    </div>
+  )
+);
+FormInput.displayName = 'FormInput';
+
+const FormFieldContext = React.createContext({
+  name: '',
+});
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
@@ -43,7 +92,6 @@ const FormField = <
 
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
   const { getFieldState, formState } = useFormContext();
 
   const fieldState = getFieldState(fieldContext.name, formState);
@@ -52,51 +100,22 @@ const useFormField = () => {
     throw new Error('useFormField should be used within <FormField>');
   }
 
-  const { id } = itemContext;
-
   return {
-    id,
     name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
     ...fieldState,
   };
 };
-
-type FormItemContextValue = {
-  id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-);
-
-const FormItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const id = React.useId();
-
-  return (
-    <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn('space-y-2', className)} {...props} />
-    </FormItemContext.Provider>
-  );
-});
-FormItem.displayName = 'FormItem';
 
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 >(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField();
+  const { error } = useFormField();
 
   return (
     <Label
       ref={ref}
       className={cn(error && 'text-destructive', className)}
-      htmlFor={formItemId}
       {...props}
     />
   );
@@ -107,18 +126,11 @@ const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
-  const { error, formItemId, formDescriptionId, formMessageId } =
-    useFormField();
+  const { error } = useFormField();
 
   return (
     <Slot
       ref={ref}
-      id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
       aria-invalid={!!error}
       {...props}
     />
@@ -130,12 +142,9 @@ const FormDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => {
-  const { formDescriptionId } = useFormField();
-
   return (
     <p
       ref={ref}
-      id={formDescriptionId}
       className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
@@ -147,7 +156,7 @@ const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
-  const { error, formMessageId } = useFormField();
+  const { error } = useFormField();
   const body = error ? String(error?.message) : children;
 
   if (!body) {
@@ -157,7 +166,6 @@ const FormMessage = React.forwardRef<
   return (
     <p
       ref={ref}
-      id={formMessageId}
       className={cn('text-sm font-medium text-destructive', className)}
       {...props}
     >
@@ -167,13 +175,25 @@ const FormMessage = React.forwardRef<
 });
 FormMessage.displayName = 'FormMessage';
 
+const FormItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <div ref={ref} className={cn('space-y-2', className)} {...props} />
+  );
+});
+FormItem.displayName = 'FormItem';
+
 export {
-  useFormField,
   Form,
-  FormItem,
+  FormGroup,
+  FormInput,
+  FormField,
   FormLabel,
   FormControl,
   FormDescription,
   FormMessage,
-  FormField,
+  FormItem,
+  useFormField,
 };

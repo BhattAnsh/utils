@@ -63,6 +63,9 @@ export function KanbanBoard() {
     } else if (activeData?.type === "column") {
       setActiveColumnId(activeData.column.id);
     }
+
+    // Add visual feedback for active drag item
+    document.body.classList.add("dragging");
   };
 
   // Handle drag end
@@ -72,6 +75,7 @@ export function KanbanBoard() {
     if (!over) {
       setActiveTask(null);
       setActiveColumnId(null);
+      document.body.classList.remove("dragging");
       return;
     }
 
@@ -92,6 +96,7 @@ export function KanbanBoard() {
 
     setActiveTask(null);
     setActiveColumnId(null);
+    document.body.classList.remove("dragging");
   };
 
   // Handle drag over for tasks
@@ -138,7 +143,7 @@ export function KanbanBoard() {
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
     >
-      <div className="flex h-[calc(100vh-10rem)] gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-4">
         <SortableContext
           items={columnIds}
           strategy={horizontalListSortingStrategy}

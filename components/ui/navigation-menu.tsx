@@ -115,6 +115,25 @@ const NavigationMenuIndicator = React.forwardRef<
 NavigationMenuIndicator.displayName =
   NavigationMenuPrimitive.Indicator.displayName;
 
+const NavigationMenuExample = () => (
+  <NavigationMenu className="bg-background p-4">
+    <NavigationMenuList>
+      <NavigationMenuItem>
+        <NavigationMenuTrigger>Home</NavigationMenuTrigger>
+        <NavigationMenuContent>
+          <NavigationMenuLink href="/">Go to Home</NavigationMenuLink>
+        </NavigationMenuContent>
+      </NavigationMenuItem>
+      <NavigationMenuItem>
+        <NavigationMenuTrigger>To-Do</NavigationMenuTrigger>
+        <NavigationMenuContent>
+          <NavigationMenuLink href="/todo">View To-Do List</NavigationMenuLink>
+        </NavigationMenuContent>
+      </NavigationMenuItem>
+    </NavigationMenuList>
+  </NavigationMenu>
+);
+
 export {
   navigationMenuTriggerStyle,
   NavigationMenu,
@@ -125,4 +144,5 @@ export {
   NavigationMenuLink,
   NavigationMenuIndicator,
   NavigationMenuViewport,
+  NavigationMenuExample,
 };

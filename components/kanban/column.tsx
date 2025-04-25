@@ -42,35 +42,13 @@ export function Column({ column }: ColumnProps) {
 
   const taskIds = column.tasks.map((task) => task.id);
 
-  // Enhanced color schemes for different columns
+  // Minimal column styling
   const getColumnColor = (columnId: string) => {
-    switch (columnId) {
-      case "backlog":
-        return "bg-zinc-50 border-dashed border-2 dark:bg-zinc-900/50";
-      case "todo":
-        return "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/50";
-      case "in-progress":
-        return "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/50";
-      case "done":
-        return "bg-emerald-50 border-emerald-200 dark:bg-green-950/30 dark:border-green-900/50";
-      default:
-        return "bg-background border-dashed border-2";
-    }
+    return "bg-card";
   };
 
   const getColumnHeaderColor = (columnId: string) => {
-    switch (columnId) {
-      case "backlog":
-        return "bg-zinc-100 dark:bg-zinc-900/80";
-      case "todo":
-        return "bg-blue-100 dark:bg-blue-900/50";
-      case "in-progress":
-        return "bg-amber-100 dark:bg-amber-900/50";
-      case "done":
-        return "bg-emerald-100 dark:bg-green-900/50";
-      default:
-        return "bg-background/50";
-    }
+    return "bg-muted/30";
   };
 
   return (
@@ -78,9 +56,9 @@ export function Column({ column }: ColumnProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex h-full flex-col rounded-lg border transition-all duration-200",
+        "flex min-h-[300px] w-[280px] flex-col rounded-md border transition-all duration-200",
         getColumnColor(column.id),
-        isDragging ? "rotate-[2deg] scale-105 opacity-90 shadow-lg" : "shadow-sm hover:shadow-md"
+        isDragging ? "opacity-90 shadow-md" : ""
       )}
       {...attributes}
     >
@@ -130,18 +108,22 @@ export function Column({ column }: ColumnProps) {
             onComplete={() => setIsAddingTask(false)}
           />
         )}
-        <SortableContext
-          items={taskIds}
-          strategy={verticalListSortingStrategy}
-        >
-          {column.tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              columnId={column.id}
-            />
-          ))}
-        </SortableContext>
+        {column.tasks.length === 0 ? (
+          <div className="text-center text-muted-foreground">Drag tasks here or click + to add a task</div>
+        ) : (
+          <SortableContext
+            items={taskIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {column.tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                columnId={column.id}
+              />
+            ))}
+          </SortableContext>
+        )}
       </CardContent>
     </Card>
   );

@@ -5,6 +5,8 @@ export interface Task {
   columnId: string;
   priority?: "low" | "medium" | "high";
   createdAt: Date;
+  dueDate?: string;
+  completed?: boolean;
 }
 
 export interface Column {
@@ -33,6 +35,7 @@ export interface TodoItem {
   priority?: "low" | "medium" | "high";
   dueDate?: string;
   addedToKanban: boolean;
+  type?: "academic" | "work" | string;
 }
 
 export interface TodoFormValues {

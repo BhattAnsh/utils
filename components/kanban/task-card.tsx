@@ -10,7 +10,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { TaskForm } from "./task-form";
 import { cn } from "@/lib/utils";
 import { useKanbanStore } from "@/hooks/use-kanban-store";
-import { format } from "date-fns";
+import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { 
   AlertDialog,
@@ -22,6 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Calendar, Clock, AlertCircle } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -52,6 +55,27 @@ export function TaskCard({ task, columnId }: TaskCardProps) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  // Priority colors
+  const priorityColors = {
+    high: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    medium: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+    low: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+  };
+
+  // Format due date
+  const formatDueDate = (date: string) => {
+    if (!date) return null;
+    
+    const dueDate = new Date(date);
+    
+    if (isToday(dueDate)) return "Today";
+    if (isTomorrow(dueDate)) return "Tomorrow";
+    return format(dueDate, "MMM d");
+  };
+
+  // Check if task is overdue
+  const isOverdue = task.dueDate ? isPast(new Date(task.dueDate)) && !task.completed : false;
 
   const handleDelete = () => {
     deleteTask(task.id);
@@ -99,6 +123,7 @@ export function TaskCard({ task, columnId }: TaskCardProps) {
         )}
         {...attributes}
         {...listeners}
+        title={task.description || "No description available"} // Tooltip for task details
       >
         <CardHeader className="p-3 pb-0">
           <h3 className="text-sm font-medium leading-tight">{task.title}</h3>
